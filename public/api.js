@@ -1,4 +1,4 @@
-module.exports = function apiCategoryDecider(taskStr){
+// module.exports = function apiCategoryDecider(taskStr){
 
 const WolframAlphaAPI = require('wolfram-alpha-api');
 const waApi = WolframAlphaAPI('ULL5QV-HEQ3H8K997');
@@ -13,10 +13,7 @@ function wolframAPICall(strInput, compareWord) {
     format: 'plaintext',
   }).then((queryresult) => {
     let objString = JSON.stringify(queryresult);
-    // let count = (objString.match(//g) || []).length
-    console.log(strInput, ":: ", objString.split(compareWord).length - 1);
-    // console.log(`${strInput} ${objString}`);
-
+    console.log(strInput, ":: ", objString.replace(/\s/g, '').toLowerCase().split(compareWord.toLowerCase()).length - 1);
   }).catch(console.error)
 };
 
