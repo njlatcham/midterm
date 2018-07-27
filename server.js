@@ -46,7 +46,7 @@ app.use("/styles", sass({
 app.use(express.static("public"));
 
 // Mount all resource routes
-app.use("/api/users", usersRoutes(knex));
+// app.use("/api/users", usersRoutes(knex));
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -70,18 +70,69 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
+app.post("/login", (req, res) => {
+  console.log('Request', req.body);
+  const userName = req.body.username;
+  const password = req.body.password;
+  knex
+    .select('username', 'password')
+    .from('todo_users')
+    .where('username', userName || 0)
+    .then((output) => {
+      // console.log(output[0].username || 'Blank', output[0].password || 'Blank');
+      // console.log(output);
+      if (output.length > 0) {
+        if (output[0].password !== password) {
+          res.status(403).send('Username or Password is incorrect - please check again')
+        } else {
+          console.log('Success');
+          res.render('personal');
+        }
+      } else {
+        res.status(403).send('Username is not in the system')
+      }
+    })
+    .catch(console.error)
+});
+
+
 app.post("/session", (req,res) => {
   res.redirect("/");
 });
 
-app.get("/registration", (req, res) => {
-  res.render("registration");
+app.get("/register", (req, res) => {
+  res.render("register");
 });
 
-app.post("/registration", (req, res) => {
-  const userName = req.body.userName;
+app.post("/register", (req, res) => {
+  const userName = req.body.username;
   const password = req.body.password;
-  res.redirect("/");
+  const email = req.body.email;
+  const first_name = req.body.firstName;
+  const last_name = req.body.lastName;
+  const address = req.body.address;
+  const mobile = req.body.telephone;
+  const dob = req.body.birthdate || "01/01/1980";
+  const gender = req.body.gender || "U";
+  console.log(req.body);
+  knex
+  .select('id')
+  .from('todo_users')
+  .where('username', userName || 0)
+  .then((output) => {
+    if (output.length > 0) {
+      res.status(403).send('Username already exists - try a different one')
+    } else {  
+      knex('todo_users')
+      .insert({username: userName, password: password, email: email, first_name: first_name, last_name:last_name, address:address, mobile: mobile, dob: dob, gender: gender })
+      .returning('id')
+      .then( (newuser) => {
+        console.log(newuser[0]);
+        res.redirect('/');
+      })
+    }
+  })
+  .catch(console.error)
 });
 
 app.get("/tasks", (req, res) => {

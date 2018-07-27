@@ -11,7 +11,7 @@
       <% include ./_partials/_header.ejs %>
 
       <section>
-        <form action="">
+        <form method="POST" action="/register">
           <input type="text" name="firstName" placeholder="First Name" />
           <input type="text" name="lastName" placeholder="Last Name" />
           <input type="email" name="email" placeholder="Email" />
@@ -21,7 +21,7 @@
           <input type="date" name="birthdate">
           <input type="text" name="address" placeholder="Address">
           <input type="checkbox">
-          <button>Register</button> <!-- Agree to Terms -->
+          <input type="submit" name="update" value="Register" /> <!-- Agree to Terms -->
         </form>
       </section>
     </body>
