@@ -1,57 +1,62 @@
-// module.exports = function apiCategoryDecider(taskStr){
+module.exports = function apiCategoryDecider(taskStr){
 
-const WolframAlphaAPI = require('wolfram-alpha-api');
-const waApi = WolframAlphaAPI('ULL5QV-HEQ3H8K997');
+  const WolframAlphaAPI = require('wolfram-alpha-api');
+  const waApi = WolframAlphaAPI('ULL5QV-HEQ3H8K997');
 
-const argvInput = process.argv[2];
-const strArray = [" Book", " Movie", " Restaurant"];
+  const strArray = [" "];//[" Book", " Movie", " Restaurant"];
 
-const resultsObj = {};
+  const resultsObj = {};
 
-const keywordObj = {
-                      book       : ["word"] //"text", "book", "novel", "readability"],
-                      // movie      : ["academyaward", "movie", "television"],
-                      // restaurant : ["food", "restaurant"],
-                   }
-
+  const keywordObj = {
+                        book       : ["word"],//, "text", "book", "novel", "readability"],
+                        movie      : ["movie"]//, "television", "academyaward"],
+                        // restaurant : ["food", "restaurant"],
+                     };
 
 
-function wolframAPICall(strInput) {
-    waApi.getFull({
-    input: strInput,
-    format: 'plaintext',
-  }).then((queryresult) => {
-      return queryresult;
-  }).catch(console.error)
-};
+  const wolframAPICall = (strInput) => {
+    return waApi
+      .getFull({
+        input: strInput,
+        format: 'plaintext',
+      })
+      .then((queryresult) => queryresult)
+      .catch((err) => {
+        console.error(err);
+        return {}
+      })
+  };
 
-function compareWordCounter ((wolframAPICall(strInput)), compareWord){
-  let intMatches = JSON.stringify(queryresult).replace(/\s/g, '').toLowerCase().split(compareWord.toLowerCase()).length - 1;
-  console.log("intMatches: ", intMatches + " strInput: ", strInput);
-  return intMatches;
-};
+  const compareWordCounter = (compareWord, queryresult) => {
+    let intMatches = JSON.stringify(queryresult).replace(/\s/g, '').toLowerCase().split(compareWord.toLowerCase()).length - 1;
+    return intMatches;
+  };
 
-for (let i = 0; i < strArray.length; i++){
-  strInput = argvInput + strArray[i];
-  for (keywordCategory in keywordObj){
+  async function initialize(){
+    for (let i of strArray){
+      strInput = taskStr + i;
 
-    console.log("keywordObj: ", keywordObj);
-    let keywordCount = 0;
+      for (keywordCategory in keywordObj){
 
-    for (let j = 0; j < keywordObj[keywordCategory].length; j++){
-      console.log("keywordCount: ", keywordCount);
-      console.log("keywordObj[keywordCategory].length: ", keywordObj[keywordCategory].length);
+        if (!resultsObj[keywordCategory]) {
+          resultsObj[keywordCategory] = 0;
+        }
 
-        keywordCount = keywordCount + wolframAPICall(strInput, keywordObj[keywordCategory][j]);
-
-
-
-        console.log("keywordObj[keywordCategory][j]: ", keywordObj[keywordCategory][j]);
-    }
-    resultsObj[keywordCategory] = { keywordCount };
-
+        for (let j of keywordObj[keywordCategory]){
+          try {
+            const compareWord = j;
+            const apiResults = await wolframAPICall(strInput);
+            const matchCount = compareWordCounter(compareWord, apiResults);
+            resultsObj[keywordCategory] += matchCount;
+          }
+          catch (err){
+            console.error(err);
+          }
+        }
+      }
+    };
+    console.log(resultsObj);
   }
+  initialize();
+  return resultsObj;
 };
-
-console.log(resultsObj);
-
