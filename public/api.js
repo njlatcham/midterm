@@ -16,15 +16,19 @@ const keywordObj = {
 
 
 
-function wolframAPICall(strInput, compareWord) {
+function wolframAPICall(strInput) {
     waApi.getFull({
     input: strInput,
     format: 'plaintext',
   }).then((queryresult) => {
-    let intMatches = JSON.stringify(queryresult).replace(/\s/g, '').toLowerCase().split(compareWord.toLowerCase()).length - 1;
-    console.log("intMatches: ", intMatches + " strInput: ", strInput);
-    return intMatches;
+      return queryresult;
   }).catch(console.error)
+};
+
+function compareWordCounter ((wolframAPICall(strInput)), compareWord){
+  let intMatches = JSON.stringify(queryresult).replace(/\s/g, '').toLowerCase().split(compareWord.toLowerCase()).length - 1;
+  console.log("intMatches: ", intMatches + " strInput: ", strInput);
+  return intMatches;
 };
 
 for (let i = 0; i < strArray.length; i++){
@@ -38,8 +42,8 @@ for (let i = 0; i < strArray.length; i++){
       console.log("keywordCount: ", keywordCount);
       console.log("keywordObj[keywordCategory].length: ", keywordObj[keywordCategory].length);
 
-        keywordCount = keywordCount + setTimeout(() => {wolframAPICall(strInput, keywordObj[keywordCategory][j]);
-      }, 2000)
+        keywordCount = keywordCount + wolframAPICall(strInput, keywordObj[keywordCategory][j]);
+
 
 
         console.log("keywordObj[keywordCategory][j]: ", keywordObj[keywordCategory][j]);
