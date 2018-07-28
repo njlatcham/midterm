@@ -8,23 +8,23 @@ module.exports = function apiCategoryDecider(taskStr){
   const resultsObj = {};
 
   const keywordObj = {
-                        book       : ["word"],//, "text", "book", "novel", "readability"],
-                        movie      : ["movie"]//, "television", "academyaward"],
-                        // restaurant : ["food", "restaurant"],
-                     };
+    book       : ["word"],//, "text", "book", "novel", "readability"],
+    movie      : ["movie"]
+    // restaurant : ["food", "restaurant"],
+  };
 
 
   const wolframAPICall = (strInput) => {
     return waApi
-      .getFull({
-        input: strInput,
-        format: 'plaintext',
-      })
-      .then((queryresult) => queryresult)
-      .catch((err) => {
-        console.error(err);
-        return {}
-      })
+    .getFull({
+      input: strInput,
+      format: 'plaintext',
+    })
+    .then((queryresult) => queryresult)
+    .catch((err) => {
+      console.error(err);
+      return {}
+    })
   };
 
   const compareWordCounter = (compareWord, queryresult) => {
@@ -55,8 +55,24 @@ module.exports = function apiCategoryDecider(taskStr){
         }
       }
     };
-    console.log(resultsObj);
+
+    const verdictMaker = (resultsObj) => {
+      let tempValue = 0;
+      let verdict = "";
+
+      for (category in resultsObj){
+
+        if (tempValue < resultsObj[category]){
+          verdict = category;
+          tempValue = resultsObj[category];
+        }
+      }
+      return verdict
+    }
+
   }
   initialize();
-  return resultsObj;
+  return verdictMaker(resultsObj);
+
+  // return resultsObj;
 };
