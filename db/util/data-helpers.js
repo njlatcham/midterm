@@ -58,7 +58,7 @@ module.exports = function makeDataHelpers(knex) {
             return new Promise((resolve, reject) => {
                 knex
                     .insert({ task_name : newTask.task_name,
-                              userid: newTask.userid, 
+                              user_id: newTask.userid, 
                               category_id : newTask.category_id, 
                               url : newTask.url, 
                               priority : newTask.priority, 
