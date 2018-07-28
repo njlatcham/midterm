@@ -15,7 +15,7 @@ module.exports = function makeDataHelpers(knex) {
         dbCheckUser: (username, password) => {
             return new Promise((resolve, reject) => {
                 knex
-                    .select('username', 'password')
+                    .select('username', 'password','id')
                     .from('todo_users')
                     .where({
                         username, username,
@@ -23,7 +23,7 @@ module.exports = function makeDataHelpers(knex) {
                     })
                     .then((output) => {
                         if (output.length > 0) {
-                            resolve(true);
+                            resolve(output);
                         } else {
                             resolve(false);
                         }
@@ -67,7 +67,7 @@ module.exports = function makeDataHelpers(knex) {
             return new Promise((resolve, reject) => {
                 knex
                     .insert({ task_name : newTask.task_name,
-                              user_id: newTask.userid, 
+                              user_id: newTask.user_id, 
                               category_id : newTask.category_id, 
                               url : newTask.url, 
                               priority : newTask.priority, 
@@ -94,7 +94,7 @@ module.exports = function makeDataHelpers(knex) {
                     .orderBy('priority', 'asc')
                     .orderBy('created_at', 'desc')
                     .from('tasks')
-                    .where('tasks.user_id', validUser.userid)
+                    .where('tasks.user_id', validUser.user_id)
                     .then((output) => {
                         if (output.length > 0) {
                             resolve(output);
@@ -111,11 +111,11 @@ module.exports = function makeDataHelpers(knex) {
                 knex('tasks')
                     .update({
                             taskname : taskId.task_name, 
-                            user_id : user_id,
-                            category_id : category_id,
-                            url : url, 
-                            priority : priority, 
-                            status : status,
+                            user_id : taskId.user_id,
+                            category_id : taskId.category_id,
+                            url : taskId.url, 
+                            priority : taskId.priority, 
+                            status : taskId.status,
                             updated_at : knex.fn.now()
                         })
                     .where ('id',taskID.task_id)    
@@ -135,14 +135,12 @@ module.exports = function makeDataHelpers(knex) {
         dbGet1Tasks: (taskId) => {
             return new Promise((resolve, reject) => {
                 knex
-                    .select('id', 'taskname', 'user_id', 'category_id', 'url', 'priority', 'status', 'EXTRACT(EPOCH FROM created_at) * 100000 AS created_at')
+                    .select('tasks.id', 'task_name', 'tasks.user_id', 'category.category_name', 'url', 'priority', 'status', 'tasks.created_at')
+                    .join('category', 'tasks.category_id', '=', 'category.id')
                     .orderBy('priority', 'asc')
-                    .orderBy('name', 'desc')
+                    .orderBy('created_at', 'desc')
                     .from('tasks')
-                    .where({
-                        'id': taskId.userid,
-                        'user_id': taskID.taskid
-                    })
+                    .where('tasks.id', taskId.taskid)
                     .then((output) => {
                         if (output.length > 0) {
                             resolve(output);
@@ -183,7 +181,7 @@ module.exports = function makeDataHelpers(knex) {
                 knex
                     .select('id', 'username', 'first_name', 'last_name', 'address', 'email', 'mobile', 'dob', 'gender', 'rating')
                     .from('todo_users')
-                    .where("id", userId.id)
+                    .where("id", userId.user_id)
                     .then((output) => {
                         if (output.length > 0) {
                             resolve(output);
@@ -208,7 +206,7 @@ module.exports = function makeDataHelpers(knex) {
                         dob : userId.dob, 
                         gender : userId.gender, 
                         })
-                    .where ('id',userId.id)    
+                    .where ('id',userId.user_id)    
                     .returning('id')
                     .then((output) => {
                         if (output.length > 0) {
