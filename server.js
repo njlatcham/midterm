@@ -8,15 +8,21 @@ const express     = require("express");
 const bodyParser  = require("body-parser");
 const sass        = require("node-sass-middleware");
 const app         = express();
-// we will need bcrypt and cookieSession in our package.json and express
+const bcrypt        = require("bcryptjs");
+const cookieSession = require("cookie-session");
+const api           = require("api")
 
 const knexConfig  = require("./knexfile");
 const knex        = require("knex")(knexConfig[ENV]);
 const morgan      = require('morgan');
 const knexLogger  = require('knex-logger');
 
+const DataHelpers = require("./db/util/data-helpers.js")(knex);
+
+const usersRoutes = require("./routes/users")(DataHelpers);
+
 // Seperated Routes for each Resource
-const usersRoutes = require("./routes/users");
+//const usersRoutes = require("./routes/users");
 // ******************************************************
 // STANDARD CONSTANTS
 
@@ -52,10 +58,10 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 
 // USES cookieSession
-// app.use(cookieSession({
-//   name: 'session',
-//   keys: ['key1', 'key2']
-// }))
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}))
 
 // ******************************************************
 // FUNCTIONS
@@ -70,69 +76,59 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
-app.post("/login", (req, res) => {
-  console.log('Request', req.body);
+app.get("/personal", (req, res) => {
+  res.render("personal");
+})
+
+app.post("/personal", (req,res) => {
   const userName = req.body.username;
-  const password = req.body.password;
-  knex
-    .select('username', 'password')
-    .from('todo_users')
-    .where('username', userName || 0)
-    .then((output) => {
-      // console.log(output[0].username || 'Blank', output[0].password || 'Blank');
-      // console.log(output);
-      if (output.length > 0) {
-        if (output[0].password !== password) {
-          res.status(403).send('Username or Password is incorrect - please check again')
-        } else {
-          console.log('Success');
-          res.render('personal');
-        }
-      } else {
-        res.status(403).send('Username is not in the system')
-      }
-    })
-    .catch(console.error)
+  const userPassword  = req.body.password;
+
+  DataHelpers.dbCheckUser(userName, password)
+  .then(function(data) {
+    console.log('X',data);
+    if (!data) {
+      res.status(403).send('Username or Password is incorrect - please check again')
+    } else {
+      console.log("Success");
+      res.redirect("/personal");
+    }
+  });
 });
 
 
-app.post("/session", (req,res) => {
-  res.redirect("/");
-});
+// app.post("/session", (req,res) => {
+//   res.redirect("/");
+// });
 
 app.get("/register", (req, res) => {
   res.render("register");
 });
 
 app.post("/register", (req, res) => {
-  const userName = req.body.username;
-  const password = req.body.password;
-  const email = req.body.email;
-  const first_name = req.body.firstName;
-  const last_name = req.body.lastName;
-  const address = req.body.address;
-  const mobile = req.body.telephone;
-  const dob = req.body.birthdate || "01/01/1980";
-  const gender = req.body.gender || "U";
+let templateVar = {
+  userName : req.body.username,
+  password : req.body.password,
+  email : req.body.email,
+  first_name : req.body.firstName,
+  last_name : req.body.lastName,
+  address : req.body.address,
+  mobile : req.body.telephone,
+  dob : req.body.birthdate || "01/01/1980",
+  gender : req.body.gender || "U"
+}
   console.log(req.body);
-  knex
-  .select('id')
-  .from('todo_users')
-  .where('username', userName || 0)
-  .then((output) => {
-    if (output.length > 0) {
+  DataHelpers.dbInsertUser(templateVar)
+  .then(function(data) {
+    console.log('X',data);
+    if (!data) {
       res.status(403).send('Username already exists - try a different one')
-    } else {  
-      knex('todo_users')
-      .insert({username: userName, password: password, email: email, first_name: first_name, last_name:last_name, address:address, mobile: mobile, dob: dob, gender: gender })
-      .returning('id')
-      .then( (newuser) => {
-        console.log(newuser[0]);
-        res.redirect('/');
-      })
+    } else {
+      console.log("Success");
+      res.render("personal");
     }
-  })
-  .catch(console.error)
+  });
+
 });
 
 app.get("/tasks", (req, res) => {
@@ -144,29 +140,40 @@ app.get("/tasks/new", (req, res) => {
 });
 
 app.post("/tasks", (req, res) => {
-  res.redirect("/tasks"); // redirect to tasks/:id eventually
+  res.redirect("/tasks"); // redirect to tasks of specific id
 });
 
+// displays page of a tasks of a specific id
 app.get("/tasks/:id", (req, res) => {
-  res.render("specifcTask");
+  res.render("tasks");
 });
 
+// displays page of tasks for editing for a specific id
 app.get("/tasks/:id/edit", (req, res) => {
-  res.render("editTask");
+  res.render("tasks/edit");
 });
 
+// add a task of a specific id
 app.put("/tasks/:id", (req, res) => {
   res.redirect("/tasks/:id");
 });
 
+// delete call for removing specific task
 app.delete("/tasks/:id", (req, res) => {
   res.redirect("/tasks");
 });
 
-app.get("/profile/edit", (req, res) => {
-  res.render("profileEdit");
+// displays profile editing page of specific user
+app.get("/profile/:userName", (req, res) => {
+
+let templateVars = {};
+const userName = req.params.userName;
+
+  res.render("profile", templateVars);
+
 });
 
+// updates user profile
 app.put("/profile", (req, res) => {
   res.redirect("/tasks"); // TBD
 });
