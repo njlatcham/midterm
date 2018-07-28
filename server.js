@@ -71,40 +71,17 @@ app.use(cookieSession({
 
 // ******************************************************
 
-// Home page
+// Home page - No DB Interaction
 app.get("/", (req, res) => {
     res.render("index");
 });
 
-app.get("/personal", (req, res) => {
-  res.render("personal");
-})
-
-app.post("/personal", (req,res) => {
-  const userName = req.body.username;
-  const userPassword  = req.body.password;
-
-  DataHelpers.dbCheckUser(userName, userPassword)
-  .then(function(data) {
-    console.log('X',data);
-    if (!data) {
-      res.status(403).send('Username or Password is incorrect - please check again')
-    } else {
-      console.log("Success");
-      res.redirect("/personal");
-    }
-  });
-});
-
-
-// app.post("/session", (req,res) => {
-//   res.redirect("/");
-// });
-
+// Register New User page - No DB Interaction
 app.get("/register", (req, res) => {
   res.render("register");
 });
 
+// Save New User - Insert New record into todo_users table
 app.post("/register", (req, res) => {
 let templateVar = {
   userName : req.body.username,
@@ -130,14 +107,49 @@ let templateVar = {
 
 });
 
-app.get("/tasks", (req, res) => {
-  res.render("tasks");
+
+// Dashboard - Check if the Username and Password checks out with the DB.
+app.post("/login", (req,res) => {
+  const userName = req.body.username;
+  const userPassword  = req.body.password;
+
+  DataHelpers.dbCheckUser(userName, userPassword)
+  .then(function(data) {
+    console.log('X',data);
+    if (!data) {
+      res.status(403).send('Username or Password is incorrect - please check again')
+    } else {
+      console.log("Success");
+      res.redirect("/personal");
+    }
+  });
 });
 
+// Dashboard - Get all the Tasks from the DB for the logged in User.
+app.get("/personal", (req, res) => {
+  let templateVar = {
+    userid: "1"
+  }
+  console.log(req.body);
+  DataHelpers.dbAllGetTasks(templateVar)
+  .then(function(data) {
+    if (!data) {
+      res.status(403).send('Failed to Insert')
+    } else {
+      console.log("Success");
+      console.log(data);
+      res.render("personal",data);
+    }
+  });      
+  // res.render("personal");
+});
+
+// Show New Task screen the logged in User. No DB Interaction.
 app.get("/tasks/new", (req, res) => {
   res.render("newTask");
 });
 
+// Insert New Task for the logged in User into DB .
 app.post("/tasks", (req, res) => {
   let templateVar = {
     task_name : "Hard Disk",
@@ -162,37 +174,114 @@ app.post("/tasks", (req, res) => {
 
 // displays page of a tasks of a specific id
 app.get("/tasks/:id", (req, res) => {
-  res.render("tasks");
-});
-
-// displays page of tasks for editing for a specific id
-app.get("/tasks/:id/edit", (req, res) => {
-  res.render("tasks/edit");
+  let templateVar = {
+    userid: "1",
+    taskid: "5"
+  }
+  console.log(req.body);
+  DataHelpers.dbGet1Tasks(templateVar)
+  .then(function(data) {
+    if (!data) {
+      res.status(403).send('Failed to Insert')
+    } else {
+      console.log("Success");
+      console.log(data);
+      res.render("tasks");
+    }
+  });      
+  
 });
 
 // add a task of a specific id
 app.put("/tasks/:id", (req, res) => {
+  let templateVar = {
+    task_id : "8",
+    task_name : "Hard Disk",
+    userid: "1", 
+    category_id : "3", 
+    url : "www.seagate.ca", 
+    priority : "false", 
+    status : "false"
+  }
+  console.log(req.body);
+  DataHelpers.dbUpdate1Tasks(templateVar)
+  .then(function(data) {
+    if (!data) {
+      res.status(403).send('Failed to Update')
+    } else {
+      console.log("Success");
+      res.render("personal");
+    }
+  });
   res.redirect("/tasks/:id");
 });
 
 // delete call for removing specific task
 app.delete("/tasks/:id", (req, res) => {
-  res.redirect("/tasks");
+  let templateVar = {
+    task_id : "10",
+    user_id: "1"
+  }
+  console.log(req.body);
+  console.log(templateVar);
+  DataHelpers.dbDelete1Tasks(templateVar)
+  .then(function(data) {
+    if (!data) {
+      res.status(403).send('Failed to Delete')
+    } else {
+      console.log("Success");
+      res.redirect("/tasks");
+    }
+  });
 });
 
 // displays profile editing page of specific user
-app.get("/profile/:userName", (req, res) => {
+app.get("/profile/:id", (req, res) => {
 
-let templateVars = {};
-const userName = req.params.userName;
+let templateVar = {
+  // userName : req.cookieSession.id
+  id : 1 // For testing, replace with actual cookie value(above line)
 
-  res.render("profile", templateVars);
+}
+console.log(req.body);
+DataHelpers.dbGetUserDet(templateVar)
+.then(function(data) {
+  if (!data) {
+    res.status(403).send('Failed to get details for user')
+  } else {
+    console.log("Success");
+    console.log(data); 
+    res.render("profile", data);
+    }
+});
 
 });
 
 // updates user profile
 app.put("/profile", (req, res) => {
-  res.redirect("/tasks"); // TBD
+  let templateVar = {
+    // id : req.cookieSession.id,
+    id : "1",
+    first_name : "Kermit", 
+    last_name : "Lee", 
+    address : "ON", 
+    email : "joe@joe.ca", 
+    mobile : "2222222", 
+    dob : "01/01/1980", 
+    gender : "M"
+  }
+  console.log(req.body);
+  DataHelpers.dbUpdate1User(templateVar)
+  .then(function(data) {
+    if (!data) {
+      res.status(403).send('Failed to Update specific user')
+    } else {
+      console.log("Success");
+      res.render("personal");
+    }
+  });
+  
+  // res.redirect("/tasks"); // TBD
 });
 
 
