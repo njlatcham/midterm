@@ -2,6 +2,8 @@ module.exports = function apiCategoryDecider(taskStr){
 
   const WolframAlphaAPI = require('wolfram-alpha-api');
   const waApi = WolframAlphaAPI('ULL5QV-HEQ3H8K997');
+  const request = require('request');
+  let searchStr =  'https://opentable.herokuapp.com/api/restaurants?city=Toronto&per_page=100&name=' + process.argv[2];
 
   const strArray = [" "];//[" Book", " Movie", " Restaurant"];
 

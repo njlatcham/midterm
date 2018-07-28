@@ -23,6 +23,7 @@
         "morgan": "^1.7.0",
         "node-sass-middleware": "^0.11.0",
         "pg": "^6.0.2",
+        "request": "^2.87.0",
         "wolfram-alpha-api": "https://products.wolframalpha.com/api/libraries/javascript/wolfram-alpha-api-1.0.0-rc.1.tgz"
     },
     "devDependencies": {

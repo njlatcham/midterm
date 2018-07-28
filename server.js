@@ -10,7 +10,8 @@ const sass          = require("node-sass-middleware");
 const app           = express();
 const bcrypt        = require("bcryptjs");
 const cookieSession = require("cookie-session");
-const api           = require("api")
+const api           = require("api");
+const request       = require('request');
 
 const knexConfig  = require("./knexfile");
 const knex        = require("knex")(knexConfig[ENV]);
