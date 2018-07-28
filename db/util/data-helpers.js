@@ -80,7 +80,8 @@ module.exports = function makeDataHelpers(knex) {
         dbAllGetTasks: (validUser) => {
             return new Promise((resolve, reject) => {
                 knex
-                    .select('id', 'taskname', 'user_id', 'category_id', 'url', 'priority', 'status', 'EXTRACT(EPOCH FROM created_at) * 100000 AS created_at')
+                    .select('id', 'taskname', 'user_id', 'category_name', 'url', 'priority', 'status', 'EXTRACT(EPOCH FROM created_at) * 100000 AS created_at')
+                    .join('category', 'tasks.category_id', '=', 'category.id')
                     .orderBy('priority', 'asc')
                     .orderBy('name', 'desc')
                     .from('tasks')
@@ -120,7 +121,7 @@ module.exports = function makeDataHelpers(knex) {
                         }
                     })
             });
-        }        
+        }, 
 
         // Leads from the Task Page to display selected tasks under the user. 
         // Takes an Object as Input. Returns object with specified tasks. Else returns false if no records found.
@@ -133,7 +134,7 @@ module.exports = function makeDataHelpers(knex) {
                     .from('tasks')
                     .where({
                         username, username,
-                        user_id, taskID.user_id
+                        user_id, taskID:user_id
                     })
                     .then((output) => {
                         if (output.length > 0) {
@@ -143,7 +144,79 @@ module.exports = function makeDataHelpers(knex) {
                         }
                     })
             });
-        }
+        },
 
+        // Leads from the Task Delete Page to delete specific tasks under the user. 
+        // Takes an Object as Input. Returns true if deleted. Else returns false if no records found.
+        dbDelete1Tasks: (taskId) => {
+            return new Promise((resolve, reject) => {
+                knex
+                    .delete()
+                    .from('tasks')
+                    .where({
+                        username, username,
+                        user_id, taskID:user_id
+                    })
+                    .then((output) => {
+                        if (output.length > 0) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    })
+            });
+        },
+
+        // Leads from the Task Delete Page to delete specific tasks under the user. 
+        // Takes an Object as Input. Returns true if deleted. Else returns false if no records found.
+        dbGetUserDet: (userId) => {
+            return new Promise((resolve, reject) => {
+                knex
+                    .select('id', 'username', 'first_name', 'last_name', 'address', 'email', 'mobile', 'dob', 'gender', 'rating')
+                    .from('todo_users')
+                    .where({
+                        user_id, userId:user_id
+                    })
+                    .then((output) => {
+                        if (output.length > 0) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    })
+            });
+        },
+
+        // Leads from the edit User Profile Page to update specific User. 
+        // Takes an Object as Input. Returns true if record is updated Else returns false.
+        dbUpdate1User: (userId) => {
+            return new Promise((resolve, reject) => {
+                knex('todo_users')
+                    .update({
+                        id : userId.id, 
+                        username : userId.username, 
+                        first_name : userId.first_name, 
+                        last_name : userId.last_name, 
+                        address : userId.address, 
+                        email : userId.email, 
+                        mobile : userId.mobile, 
+                        dob : userId.dob, 
+                        gender : userId.gender, 
+                        rating : userId.rating
+                        })
+                    .where ('id',userId.task_id)    
+                    .returning('id')
+                    .then((output) => {
+                        if (output.length > 0) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    })
+            });
+        }        
+
+        
+        
     } //end of Datahelper return
 } // end of datahelper
