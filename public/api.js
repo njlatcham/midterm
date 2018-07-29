@@ -10,10 +10,17 @@ module.exports = function apiCategoryDecider(taskStr){
   const resultsObj = {};
 
   const keywordObj = {
-    book       : ["word"],//, "text", "book", "novel", "readability"],
-    movie      : ["movie"]
-    // restaurant : ["food", "restaurant"],
+    book       : ["word", "book", "text"],
+    movie      : ["movie", "academyaward"]
   };
+
+
+  request(searchStr, function (error, response, body) {
+    console.log('error:', error); // Print the error if one occurred
+    console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+    console.log('body:', body); // Print the HTML for the Google homepage.
+  });
+
 
 
   const wolframAPICall = (strInput) => {
@@ -57,8 +64,9 @@ module.exports = function apiCategoryDecider(taskStr){
         }
       }
     };
+  };
 
-    const verdictMaker = (resultsObj) => {
+  const verdictMaker = (resultsObj) => {
       let tempValue = 0;
       let verdict = "";
 
@@ -72,9 +80,8 @@ module.exports = function apiCategoryDecider(taskStr){
       return verdict
     }
 
-  }
+  };
   initialize();
   return verdictMaker(resultsObj);
 
   // return resultsObj;
-};
