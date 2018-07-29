@@ -10,7 +10,7 @@ const sass        = require("node-sass-middleware");
 const app         = express();
 const bcrypt        = require("bcryptjs");
 const session = require("cookie-session");
-// const api           = require("api");
+const api           = require("api");
 const request       = require("request");
 
 const knexConfig  = require("./knexfile");
@@ -127,9 +127,9 @@ app.post("/login", (req,res) => {
       res.status(403).send('Username or Password is incorrect - please check again')
     } else {
       console.log("Success");
-      // console.log("Success", data[0].id);      
+      // console.log("Success", data[0].id);
       req.session.user_id = data[0].id;
-      console.log("Success", req.session.user_id);      
+      console.log("Success", req.session.user_id);
       req.session.user_name = data[0].username;
       res.redirect("/personal");
     }
@@ -139,7 +139,7 @@ app.post("/login", (req,res) => {
 // Logout and clear the cookies.
 app.post("/logout", (req,res) => {
   res.clearCookie('user_id');
-  res.redirect('/login');
+  res.redirect('/');
 });
 
 
@@ -155,11 +155,10 @@ app.get("/personal", (req, res) => {
       res.status(403).send('Failed to Insert')
     } else {
       console.log("Success");
-      console.log(data);
-      res.render("personal",data);
+      let taskData = { data }
+      res.render("personal", taskData);
     }
-  });      
-  // res.render("personal");
+  });
 });
 
 // Show New Task screen the logged in User. No DB Interaction.
@@ -172,9 +171,9 @@ app.post("/tasks", (req, res) => {
   let templateVar = {
     task_name : "Hard Disk",
     user_id: req.session.user_id,
-    category_id : "4", 
-    url : "www.seagate.com", 
-    priority : "false", 
+    category_id : "4",
+    url : "www.seagate.com",
+    priority : "false",
     status : "false"
   }
   console.log(req.body);
@@ -187,7 +186,7 @@ app.post("/tasks", (req, res) => {
       console.log("Success");
       res.render("personal");
     }
-  });      
+  });
   // res.redirect("/tasks"); // redirect to tasks of specific id
 });
 
@@ -195,7 +194,7 @@ app.post("/tasks", (req, res) => {
 app.get("/tasks/:id", (req, res) => {
   let templateVar = {
     user_id: req.session.user_id,
-    taskid: "5"
+    taskid: '5'
   }
   console.log(req.body);
   console.log(templateVar);
@@ -208,8 +207,7 @@ app.get("/tasks/:id", (req, res) => {
       console.log(data);
       res.render("tasks");
     }
-  });      
-  
+  });
 });
 
 // add a task of a specific id
@@ -218,9 +216,9 @@ app.put("/tasks/:id", (req, res) => {
     task_id : "8",
     task_name : "Hard Disk",
     user_id: req.session.user_id,
-    category_id : "3", 
-    url : "www.seagate.ca", 
-    priority : "false", 
+    category_id : "3",
+    url : "www.seagate.ca",
+    priority : "false",
     status : "false"
   }
   console.log(req.body);
@@ -237,9 +235,9 @@ app.put("/tasks/:id", (req, res) => {
 });
 
 // delete call for removing specific task
-app.delete("/tasks/:id", (req, res) => {
+app.post("/personal/:id/delete", (req, res) => {
   let templateVar = {
-    task_id : "10",
+    task_id : req.params.id,
     user_id: req.session.user_id
   }
   console.log(req.body);
@@ -250,7 +248,7 @@ app.delete("/tasks/:id", (req, res) => {
       res.status(403).send('Failed to Delete')
     } else {
       console.log("Success");
-      res.redirect("/tasks");
+      res.redirect("/personal");
     }
   });
 });
@@ -258,34 +256,33 @@ app.delete("/tasks/:id", (req, res) => {
 // displays profile editing page of specific user
 app.get("/profile/:id", (req, res) => {
 
-let templateVar = {
-  user_id: req.session.user_id
-}
-console.log(req.body);
-DataHelpers.dbGetUserDet(templateVar)
-.then(function(data) {
-  if (!data) {
-    res.status(403).send('Failed to get details for user')
-  } else {
-    console.log("Success");
-    console.log(data); 
-    res.render("profile", data);
-    }
-});
-
+  let templateVar = {
+    user_id: req.session.user_id
+  }
+  console.log(req.body);
+  DataHelpers.dbGetUserDet(templateVar)
+  .then(function(data) {
+    if (!data) {
+      res.status(403).send('Failed to get details for user')
+    } else {
+      console.log("Success");
+      console.log(data);
+      res.render("profile", data);
+      }
+  });
 });
 
 // updates user profile
 app.put("/profile", (req, res) => {
   let templateVar = {
     // id : req.session.id,
-    user_id: req.session.user_id,    
-    first_name : "Kermit", 
-    last_name : "Lee", 
-    address : "ON", 
-    email : "joe@joe.ca", 
-    mobile : "2222222", 
-    dob : "01/01/1980", 
+    user_id: req.session.user_id,
+    first_name : "Kermit",
+    last_name : "Lee",
+    address : "ON",
+    email : "joe@joe.ca",
+    mobile : "2222222",
+    dob : "01/01/1980",
     gender : "M"
   }
   console.log(req.body);
@@ -298,8 +295,6 @@ app.put("/profile", (req, res) => {
       res.render("personal");
     }
   });
-  
-  // res.redirect("/tasks"); // TBD
 });
 
 
