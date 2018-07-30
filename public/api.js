@@ -1,11 +1,9 @@
-module.exports = function apiCategoryDecider(taskStr){
+module.exports = function apiCategoryDecider(strInput){
 
   const WolframAlphaAPI = require('wolfram-alpha-api');
   const waApi = WolframAlphaAPI('ULL5QV-HEQ3H8K997');
   const request = require('request');
-  let searchStr =  'https://opentable.herokuapp.com/api/restaurants?city=Toronto&per_page=100&name=' + process.argv[2];
-
-  const strArray = [" "];//[" Book", " Movie", " Restaurant"];
+  let searchStr =  'https://opentable.herokuapp.com/api/restaurants?city=Toronto&per_page=25&name=' + process.argv[2];
 
   const resultsObj = {};
 
@@ -29,7 +27,7 @@ module.exports = function apiCategoryDecider(taskStr){
       input: strInput,
       format: 'plaintext',
     })
-    .then((queryresult) => queryresult)
+    .then((queryresult) => queryresult) //return queryresult
     .catch((err) => {
       console.error(err);
       return {}
@@ -42,8 +40,9 @@ module.exports = function apiCategoryDecider(taskStr){
   };
 
   async function initialize(){
+
     for (let i of strArray){
-      strInput = taskStr + i;
+      strInput = strInput + i;
 
       for (keywordCategory in keywordObj){
 
